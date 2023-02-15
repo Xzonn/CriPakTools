@@ -198,7 +198,7 @@ namespace CriPakGUI
 
                         if (size != 0)
                         {
-                            chunk = MainApp.Instance.currentPackage.CpkContent.DecompressLegacyCRI(chunk, size);
+                            chunk = CPK.DecompressLegacyCRI(chunk, size);
                         }
                     }
 
@@ -320,7 +320,7 @@ namespace CriPakGUI
 
                 if (size != 0)
                 {
-                    chunk = MainApp.Instance.currentPackage.CpkContent.DecompressLegacyCRI(chunk, size);
+                    chunk = CPK.DecompressLegacyCRI(chunk, size);
                 }
             }
             oldFile.Close();

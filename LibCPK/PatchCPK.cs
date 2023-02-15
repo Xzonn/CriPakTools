@@ -32,10 +32,10 @@ namespace LibCPK
         public void Patch(string outputFilePath, bool bForceCompress, Dictionary<string, string> batch_file_list)
         {
             string msg;
-            BinaryReader oldFile = new BinaryReader(File.OpenRead(this.cpkContentName));
+            BinaryReader br = new BinaryReader(File.OpenRead(this.cpkContentName));
             string outputName = outputFilePath;
 
-            BinaryWriter newCPK = new BinaryWriter(File.OpenWrite(outputName));
+            BinaryWriter bw = new BinaryWriter(File.OpenWrite(outputName));
 
             List<FileEntry> entries = cpk.fileTable.OrderBy(x => x.FileOffset).ToList();
 
@@ -65,12 +65,12 @@ namespace LibCPK
                     if (entries[i].FileType == "FILE")
                     {
                         // I'm too lazy to figure out how to update the ContextOffset position so this works :)
-                        if ((ulong)newCPK.BaseStream.Position < cpk.ContentOffset)
+                        if ((ulong)bw.BaseStream.Position < cpk.ContentOffset)
                         {
-                            ulong padLength = cpk.ContentOffset - (ulong)newCPK.BaseStream.Position;
+                            ulong padLength = cpk.ContentOffset - (ulong)bw.BaseStream.Position;
                             for (ulong z = 0; z < padLength; z++)
                             {
-                                newCPK.Write((byte)0);
+                                bw.Write((byte)0);
                             }
                         }
 
@@ -80,8 +80,8 @@ namespace LibCPK
                         if (!batch_file_list.Keys.Contains(currentName.ToString()))
                         //如果不在表中，复制原始数据
                         {
-                            oldFile.BaseStream.Seek((long)entries[i].FileOffset, SeekOrigin.Begin);
-                            entries[i].FileOffset = (ulong)newCPK.BaseStream.Position;
+                            br.BaseStream.Seek((long)entries[i].FileOffset, SeekOrigin.Begin);
+                            entries[i].FileOffset = (ulong)bw.BaseStream.Position;
                             if (entries[i].FileName.ToString() == "ETOC_HDR")
                             {
 
@@ -91,17 +91,10 @@ namespace LibCPK
                             onMsgUpdateChanged?.Invoke(string.Format("Update Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                             cpk.UpdateFileEntry(entries[i]);
 
-                            byte[] chunk = oldFile.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
-                            newCPK.Write(chunk);
+                            byte[] chunk = br.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
+                            bw.Write(chunk);
 
-                            if ((newCPK.BaseStream.Position % 0x800) > 0 && i < entries.Count - 1)
-                            {
-                                long cur_pos = newCPK.BaseStream.Position;
-                                for (int j = 0; j < (0x800 - (cur_pos % 0x800)); j++)
-                                {
-                                    newCPK.Write((byte)0);
-                                }
-                            }
+                            bw.BaseStream.Position += (0x800 - bw.BaseStream.Position % 0x800) % 0x800;
 
                         }
                         else
@@ -112,7 +105,7 @@ namespace LibCPK
                             onMsgUpdateChanged?.Invoke(string.Format("Patching: {0}", currentName.ToString()));
 
                             byte[] newbie = File.ReadAllBytes(replace_with);
-                            entries[i].FileOffset = (ulong)newCPK.BaseStream.Position;
+                            entries[i].FileOffset = (ulong)bw.BaseStream.Position;
                             int o_ext_size = Int32.Parse((entries[i].ExtractSize).ToString());
                             int o_com_size = Int32.Parse((entries[i].FileSize).ToString());
                             if ((o_com_size < o_ext_size) && entries[i].FileType == "FILE" && bForceCompress == true)
@@ -121,12 +114,12 @@ namespace LibCPK
                                 msg = string.Format("Compressing data:{0:x8}", newbie.Length);
                                 onMsgUpdateChanged?.Invoke(msg);
 
-                                byte[] dest_comp = cpk.CompressCRILAYLA(newbie);
+                                byte[] dest_comp = CPK.CompressCRILAYLA(newbie);
 
                                 entries[i].FileSize = Convert.ChangeType(dest_comp.Length, entries[i].FileSizeType);
                                 entries[i].ExtractSize = Convert.ChangeType(newbie.Length, entries[i].FileSizeType);
                                 cpk.UpdateFileEntry(entries[i]);
-                                newCPK.Write(dest_comp);
+                                bw.Write(dest_comp);
                                 onMsgUpdateChanged?.Invoke(string.Format("Update Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                                 onMsgUpdateChanged?.Invoke(string.Format(">> {0:x8}\r\n", dest_comp.Length));
                             }
@@ -138,27 +131,20 @@ namespace LibCPK
                                 entries[i].FileSize = Convert.ChangeType(newbie.Length, entries[i].FileSizeType);
                                 entries[i].ExtractSize = Convert.ChangeType(newbie.Length, entries[i].FileSizeType);
                                 cpk.UpdateFileEntry(entries[i]);
-                                newCPK.Write(newbie);
+                                bw.Write(newbie);
                                 onMsgUpdateChanged?.Invoke(string.Format("Update Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                             }
 
 
-                            if ((newCPK.BaseStream.Position % 0x800) > 0 && i < entries.Count - 1)
-                            {
-                                long cur_pos = newCPK.BaseStream.Position;
-                                for (int j = 0; j < (0x800 - (cur_pos % 0x800)); j++)
-                                {
-                                    newCPK.Write((byte)0);
-                                }
-                            }
+                            bw.BaseStream.Position += (0x800 - bw.BaseStream.Position % 0x800) % 0x800;
                         }
                     }
                     else
                     {
                         //Update HDR:
                         Debug.Print("Got HDR:" + currentName.ToString());
-                        oldFile.BaseStream.Seek((long)entries[i].FileOffset, SeekOrigin.Begin);
-                        entries[i].FileOffset = (ulong)newCPK.BaseStream.Position;
+                        br.BaseStream.Seek((long)entries[i].FileOffset, SeekOrigin.Begin);
+                        entries[i].FileOffset = (ulong)bw.BaseStream.Position;
                         if (entries[i].FileName.ToString() == "CPK_HDR")
                         {
 
@@ -186,25 +172,20 @@ namespace LibCPK
                         onMsgUpdateChanged?.Invoke(string.Format("Update HDR Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                         cpk.UpdateFileEntry(entries[i]);
 
-                        byte[] chunk = oldFile.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
-                        newCPK.Write(chunk);
+                        byte[] chunk = br.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
+                        bw.Write(chunk);
 
-                        if ((newCPK.BaseStream.Position % 0x800) > 0 && i < entries.Count - 1)
-                        {
-                            long cur_pos = newCPK.BaseStream.Position;
-                            for (int j = 0; j < (0x800 - (cur_pos % 0x800)); j++)
-                            {
-                                newCPK.Write((byte)0);
-                            }
-                        }
+                        bw.BaseStream.Position += (0x800 - bw.BaseStream.Position % 0x800) % 0x800;
+                        /*
                         if (entries[i].FileName.ToString() == "TOC_HDR")
                         {
                             //IF TOC ,WRITE MORE 0x800
                             for (int j = 0; j < 0x800; j++)
                             {
-                                newCPK.Write((byte)0);
+                                bw.Write((byte)0);
                             }
                         }
+                        */
                     }
                 }
                 else
@@ -215,22 +196,22 @@ namespace LibCPK
                 }
             }
 
-            cpk.WriteCPK(newCPK);
+            cpk.WriteCPK(bw);
             msg = string.Format("Writing TOC....");
 
             onMsgUpdateChanged?.Invoke(msg);
 
-            cpk.WriteITOC(newCPK);
-            cpk.WriteTOC(newCPK);
-            cpk.WriteETOC(newCPK);
-            cpk.WriteGTOC(newCPK);
+            cpk.WriteITOC(bw);
+            cpk.WriteTOC(bw);
+            cpk.WriteETOC(bw);
+            cpk.WriteGTOC(bw);
 
-            newCPK.Close();
-            oldFile.Close();
+            bw.Close();
+            br.Close();
             msg = string.Format("Saving CPK to {0}....", outputName);
             onMsgUpdateChanged?.Invoke(msg);
             Debug.Print(msg);
-            onCompleteChanged.Invoke();
+            onCompleteChanged?.Invoke();
         }
     }
 }
