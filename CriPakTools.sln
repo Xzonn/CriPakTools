@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29201.188
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CriPakTools", "CriPakTools\CriPakTools.csproj", "{05EC5B1D-DF4F-48D6-A17F-C8AB5FD4A015}"
 	ProjectSection(ProjectDependencies) = postProject
