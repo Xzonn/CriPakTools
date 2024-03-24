@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CriPakGUI", "CriPakGUI\CriP
 		{BA3A00E4-4F51-4AB4-A8FB-F4B64A874449} = {BA3A00E4-4F51-4AB4-A8FB-F4B64A874449}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCPK", "LibCPK\LibCPK.csproj", "{BA3A00E4-4F51-4AB4-A8FB-F4B64A874449}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibCPK", "LibCPK\LibCPK.csproj", "{BA3A00E4-4F51-4AB4-A8FB-F4B64A874449}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibCRIComp", "LibCRIComp\LibCRIComp.vcxproj", "{E5829A5B-E121-41AA-A84B-E7B4C8DBDF30}"
 EndProject
