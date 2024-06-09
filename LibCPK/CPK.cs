@@ -10,7 +10,7 @@ namespace LibCPK
 {
     public class CPK
     {
-        public List<FileEntry> fileTable = new List<FileEntry>();
+        public List<FileEntry> fileTable = [];
         public Dictionary<string, object> cpkdata;
         public UTF utf;
         UTF files;
@@ -28,7 +28,7 @@ namespace LibCPK
                 uint Files;
                 ushort Align;
 
-                EndianReader er = new EndianReader(File.OpenRead(sPath), true);
+                EndianReader er = new(File.OpenRead(sPath), true);
                 MemoryStream ms;
                 EndianReader utfr;
 
@@ -42,7 +42,7 @@ namespace LibCPK
 
                 CPK_packet = utf_packet;
 
-                FileEntry CPAK_entry = new FileEntry
+                FileEntry CPAK_entry = new()
                 {
                     FileName = "CPK_HDR",
                     FileOffsetPos = er.BaseStream.Position + 0x10,
@@ -66,7 +66,7 @@ namespace LibCPK
                 utfr.Close();
                 ms.Close();
 
-                cpkdata = new Dictionary<string, object>();
+                cpkdata = [];
 
                 try
                 {
@@ -151,7 +151,7 @@ namespace LibCPK
 
         FileEntry CreateFileEntry(string FileName, ulong FileOffset, Type FileOffsetType, long FileOffsetPos, string TOCName, string FileType, bool encrypted)
         {
-            FileEntry entry = new FileEntry
+            FileEntry entry = new()
             {
                 FileName = FileName,
                 FileOffset = FileOffset,
@@ -207,8 +207,8 @@ namespace LibCPK
             toc_entry.Encrypted = isUtfEncrypted;
             toc_entry.FileSize = TOC_packet.Length;
 
-            MemoryStream ms = new MemoryStream(utf_packet);
-            EndianReader utfr = new EndianReader(ms, false);
+            MemoryStream ms = new(utf_packet);
+            EndianReader utfr = new(ms, false);
 
             files = new UTF();
             if (!files.ReadUTF(utfr, encoding))
@@ -220,34 +220,34 @@ namespace LibCPK
             utfr.Close();
             ms.Close();
 
-            FileEntry temp;
             for (int i = 0; i < files.num_rows; i++)
             {
-                temp = new FileEntry();
+                FileEntry temp = new()
+                {
+                    TOCName = "TOC",
 
-                temp.TOCName = "TOC";
+                    DirName = GetColumnData(files, i, "DirName"),
+                    FileName = GetColumnData(files, i, "FileName"),
 
-                temp.DirName = GetColumnData(files, i, "DirName");
-                temp.FileName = GetColumnData(files, i, "FileName");
+                    FileSize = GetColumnData(files, i, "FileSize"),
+                    FileSizePos = GetColumnPostion(files, i, "FileSize"),
+                    FileSizeType = GetColumnType(files, i, "FileSize"),
 
-                temp.FileSize = GetColumnData(files, i, "FileSize");
-                temp.FileSizePos = GetColumnPostion(files, i, "FileSize");
-                temp.FileSizeType = GetColumnType(files, i, "FileSize");
+                    ExtractSize = GetColumnData(files, i, "ExtractSize"),
+                    ExtractSizePos = GetColumnPostion(files, i, "ExtractSize"),
+                    ExtractSizeType = GetColumnType(files, i, "ExtractSize"),
 
-                temp.ExtractSize = GetColumnData(files, i, "ExtractSize");
-                temp.ExtractSizePos = GetColumnPostion(files, i, "ExtractSize");
-                temp.ExtractSizeType = GetColumnType(files, i, "ExtractSize");
+                    FileOffset = ((ulong)GetColumnData(files, i, "FileOffset") + (ulong)add_offset),
+                    FileOffsetPos = GetColumnPostion(files, i, "FileOffset"),
+                    FileOffsetType = GetColumnType(files, i, "FileOffset"),
 
-                temp.FileOffset = ((ulong)GetColumnData(files, i, "FileOffset") + (ulong)add_offset);
-                temp.FileOffsetPos = GetColumnPostion(files, i, "FileOffset");
-                temp.FileOffsetType = GetColumnType(files, i, "FileOffset");
+                    FileType = "FILE",
 
-                temp.FileType = "FILE";
+                    Offset = add_offset,
 
-                temp.Offset = add_offset;
-
-                temp.ID = GetColumnData(files, i, "ID");
-                temp.UserString = GetColumnData(files, i, "UserString");
+                    ID = GetColumnData(files, i, "ID"),
+                    UserString = GetColumnData(files, i, "UserString")
+                };
 
                 fileTable.Add(temp);
             }
@@ -311,7 +311,7 @@ namespace LibCPK
                 bw.Write(Encoding.ASCII.GetBytes(ID));
                 //bw.Write((Int32)0xff);
                 bw.Write(unk1);
-                bw.Write((UInt64)encrypted.Length);
+                bw.Write((ulong)encrypted.Length);
                 bw.Write(encrypted);
             }
         }
@@ -334,8 +334,8 @@ namespace LibCPK
             itoc_entry.Encrypted = isUtfEncrypted;
             itoc_entry.FileSize = ITOC_packet.Length;
 
-            MemoryStream ms = new MemoryStream(utf_packet);
-            EndianReader utfr = new EndianReader(ms, false);
+            MemoryStream ms = new(utf_packet);
+            EndianReader utfr = new(ms, false);
 
             files = new UTF();
             if (!files.ReadUTF(utfr))
@@ -360,15 +360,15 @@ namespace LibCPK
             Dictionary<int, long> SizePosTable, CSizePosTable;
             Dictionary<int, Type> SizeTypeTable, CSizeTypeTable;
 
-            List<int> IDs = new List<int>();
+            List<int> IDs = [];
 
-            SizeTable = new Dictionary<int, uint>();
-            SizePosTable = new Dictionary<int, long>();
-            SizeTypeTable = new Dictionary<int, Type>();
+            SizeTable = [];
+            SizePosTable = [];
+            SizeTypeTable = [];
 
-            CSizeTable = new Dictionary<int, uint>();
-            CSizePosTable = new Dictionary<int, long>();
-            CSizeTypeTable = new Dictionary<int, Type>();
+            CSizeTable = [];
+            CSizePosTable = [];
+            CSizeTypeTable = [];
 
             ushort ID, size1;
             uint size2;
@@ -451,7 +451,7 @@ namespace LibCPK
             ulong baseoffset = ContentOffset;
 
             // Seems ITOC can mix up the IDs..... but they'll alwaysy be in order...
-            IDs = IDs.OrderBy(x => x).ToList();
+            IDs = [.. IDs.OrderBy(x => x)];
 
 
             for (int i = 0; i < IDs.Count; i++)
@@ -566,8 +566,8 @@ namespace LibCPK
             etoc_entry.Encrypted = isUtfEncrypted;
             etoc_entry.FileSize = ETOC_packet.Length;
 
-            MemoryStream ms = new MemoryStream(utf_packet);
-            EndianReader utfr = new EndianReader(ms, false);
+            MemoryStream ms = new(utf_packet);
+            EndianReader utfr = new(ms, false);
 
             files = new UTF();
             if (!files.ReadUTF(utfr))
@@ -585,7 +585,7 @@ namespace LibCPK
             {
                 fileTable[i].LocalDir = GetColumnData(files, i, "LocalDir");
                 var tUpdateDateTime = GetColumnData(files, i, "UpdateDateTime");
-                if (tUpdateDateTime == null) tUpdateDateTime = 0;
+                tUpdateDateTime ??= 0;
                 fileTable[i].UpdateDateTime = (ulong)tUpdateDateTime;
             }
 
@@ -636,8 +636,8 @@ namespace LibCPK
         {
             byte[] result;// = new byte[USize];
 
-            MemoryStream ms = new MemoryStream(input);
-            EndianReader er = new EndianReader(ms, true);
+            MemoryStream ms = new(input);
+            EndianReader er = new(ms, true);
 
             er.BaseStream.Seek(8, SeekOrigin.Begin); // Skip CRILAYLA
             int uncompressed_size = er.ReadInt32();
@@ -655,7 +655,7 @@ namespace LibCPK
             int output_end = 0x100 + uncompressed_size - 1;
             byte bit_pool = 0;
             int bits_left = 0, bytes_output = 0;
-            int[] vle_lens = new int[4] { 2, 3, 5, 8 };
+            int[] vle_lens = [2, 3, 5, 8];
 
             while (bytes_output < uncompressed_size)
             {
@@ -706,8 +706,8 @@ namespace LibCPK
         {
             byte[] result;// = new byte[USize];
 
-            MemoryStream ms = new MemoryStream(input);
-            EndianReader er = new EndianReader(ms, true);
+            MemoryStream ms = new(input);
+            EndianReader er = new(ms, true);
 
             er.BaseStream.Seek(8, SeekOrigin.Begin); // Skip CRILAYLA
             int uncompressed_size = er.ReadInt32();
@@ -725,7 +725,7 @@ namespace LibCPK
             int output_end = 0x100 + uncompressed_size - 1;
             byte bit_pool = 0;
             int bits_left = 0, bytes_output = 0;
-            int[] vle_lens = new int[4] { 2, 3, 5, 8 };
+            int[] vle_lens = [2, 3, 5, 8];
 
             while (bytes_output < uncompressed_size)
             {
@@ -830,24 +830,24 @@ namespace LibCPK
                 }
             }
 
-            if (Temp is ulong)
+            if (Temp is ulong ul)
             {
-                return (Temp == null) ? 0xFFFFFFFFFFFFFFFF : (ulong)Temp;
+                return (Temp == null) ? 0xFFFFFFFFFFFFFFFF : ul;
             }
 
-            if (Temp is uint)
+            if (Temp is uint ui)
             {
-                return (Temp == null) ? 0xFFFFFFFF : (uint)Temp;
+                return (Temp == null) ? 0xFFFFFFFF : ui;
             }
 
-            if (Temp is ushort)
+            if (Temp is ushort us)
             {
-                return (Temp == null) ? (ushort)0xFFFF : (ushort)Temp;
+                return (Temp == null) ? (ushort)0xFFFF : us;
             }
 
-            if (Temp is byte)
+            if (Temp is byte b)
             {
-                return (Temp == null) ? (byte)0xFF : (byte)Temp;
+                return (Temp == null) ? (byte)0xFF : b;
             }
 
             return 0;
@@ -1047,33 +1047,33 @@ namespace LibCPK
 
         public void UpdateValue(ref byte[] packet, object value, long pos, Type type)
         {
-            MemoryStream temp = new MemoryStream();
+            MemoryStream temp = new();
             temp.Write(packet, 0, packet.Length);
 
-            EndianWriter toc = new EndianWriter(temp, false);
+            EndianWriter toc = new(temp, false);
             toc.Seek((int)pos, SeekOrigin.Begin);
 
             value = Convert.ChangeType(value, type);
 
-            if (type == typeof(Byte))
+            if (type == typeof(byte))
             {
-                toc.Write((Byte)value);
+                toc.Write((byte)value);
             }
-            else if (type == typeof(UInt16))
+            else if (type == typeof(ushort))
             {
-                toc.Write((UInt16)value);
+                toc.Write((ushort)value);
             }
-            else if (type == typeof(UInt32))
+            else if (type == typeof(uint))
             {
-                toc.Write((UInt32)value);
+                toc.Write((uint)value);
             }
-            else if (type == typeof(UInt64))
+            else if (type == typeof(ulong))
             {
-                toc.Write((UInt64)value);
+                toc.Write((ulong)value);
             }
-            else if (type == typeof(Single))
+            else if (type == typeof(float))
             {
-                toc.Write((Single)value);
+                toc.Write((float)value);
             }
             else
             {
@@ -1170,13 +1170,15 @@ namespace LibCPK
             num_rows = er.ReadInt32();
 
             //read Columns
-            columns = new List<COLUMN>();
+            columns = [];
             COLUMN column;
 
             for (int i = 0; i < num_columns; i++)
             {
-                column = new COLUMN();
-                column.flags = er.ReadByte();
+                column = new COLUMN
+                {
+                    flags = er.ReadByte()
+                };
                 if (column.flags == 0)
                 {
                     er.BaseStream.Seek(3, SeekOrigin.Current);
@@ -1193,7 +1195,7 @@ namespace LibCPK
 
             //read Rows
 
-            rows = new List<ROWS>();
+            rows = [];
             ROWS current_entry;
             ROW current_row;
             int storage_flag;
@@ -1279,7 +1281,7 @@ namespace LibCPK
 
         public ROWS()
         {
-            rows = new List<ROW>();
+            rows = [];
         }
     }
 
@@ -1288,98 +1290,74 @@ namespace LibCPK
         public int type = -1;
         public object GetValue()
         {
-            switch (this.type)
+            return type switch
             {
-                case (int)E_StructTypes.DATA_TYPE_UINT8:
-                case (int)E_StructTypes.DATA_TYPE_UINT8_1: return this.uint8;
-
-                case (int)E_StructTypes.DATA_TYPE_UINT16:
-                case (int)E_StructTypes.DATA_TYPE_UINT16_1: return this.uint16;
-
-                case (int)E_StructTypes.DATA_TYPE_UINT32:
-                case (int)E_StructTypes.DATA_TYPE_UINT32_1: return this.uint32;
-
-                case (int)E_StructTypes.DATA_TYPE_UINT64:
-                case (int)E_StructTypes.DATA_TYPE_UINT64_1: return this.uint64;
-
-                case (int)E_StructTypes.DATA_TYPE_FLOAT: return this.ufloat;
-
-                case (int)E_StructTypes.DATA_TYPE_STRING: return this.str;
-
-                case (int)E_StructTypes.DATA_TYPE_BYTEARRAY: return this.data;
-
-                default: return null;
-            }
+                (int)E_StructTypes.DATA_TYPE_UINT8 or (int)E_StructTypes.DATA_TYPE_UINT8_1 => uint8,
+                (int)E_StructTypes.DATA_TYPE_UINT16 or (int)E_StructTypes.DATA_TYPE_UINT16_1 => uint16,
+                (int)E_StructTypes.DATA_TYPE_UINT32 or (int)E_StructTypes.DATA_TYPE_UINT32_1 => uint32,
+                (int)E_StructTypes.DATA_TYPE_UINT64 or (int)E_StructTypes.DATA_TYPE_UINT64_1 => uint64,
+                (int)E_StructTypes.DATA_TYPE_FLOAT => ufloat,
+                (int)E_StructTypes.DATA_TYPE_STRING => str,
+                (int)E_StructTypes.DATA_TYPE_BYTEARRAY => data,
+                _ => null,
+            };
         }
 
         public new Type GetType()
         {
-            object result = -1;
-
-            switch (this.type)
+            return type switch
             {
-                case (int)E_StructTypes.DATA_TYPE_UINT8:
-                case (int)E_StructTypes.DATA_TYPE_UINT8_1: return this.uint8.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_UINT16:
-                case (int)E_StructTypes.DATA_TYPE_UINT16_1: return this.uint16.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_UINT32:
-                case (int)E_StructTypes.DATA_TYPE_UINT32_1: return this.uint32.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_UINT64:
-                case (int)E_StructTypes.DATA_TYPE_UINT64_1: return this.uint64.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_FLOAT: return this.ufloat.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_STRING: return this.str.GetType();
-
-                case (int)E_StructTypes.DATA_TYPE_BYTEARRAY: return this.data.GetType();
-
-                default: return null;
-            }
+                (int)E_StructTypes.DATA_TYPE_UINT8 or (int)E_StructTypes.DATA_TYPE_UINT8_1 => uint8.GetType(),
+                (int)E_StructTypes.DATA_TYPE_UINT16 or (int)E_StructTypes.DATA_TYPE_UINT16_1 => uint16.GetType(),
+                (int)E_StructTypes.DATA_TYPE_UINT32 or (int)E_StructTypes.DATA_TYPE_UINT32_1 => uint32.GetType(),
+                (int)E_StructTypes.DATA_TYPE_UINT64 or (int)E_StructTypes.DATA_TYPE_UINT64_1 => uint64.GetType(),
+                (int)E_StructTypes.DATA_TYPE_FLOAT => ufloat.GetType(),
+                (int)E_StructTypes.DATA_TYPE_STRING => str.GetType(),
+                (int)E_StructTypes.DATA_TYPE_BYTEARRAY => data.GetType(),
+                _ => null,
+            };
         }
 
         public void UpdateTypedData(EndianReader er, int flags, long strings_offset, long data_offset, Encoding encoding)
         {
             int type = flags & (int)UTF.COLUMN_FLAGS.TYPE_MASK;
             this.type = type;
-            this.position = er.BaseStream.Position;
+            position = er.BaseStream.Position;
             switch (type)
             {
                 case (int)E_StructTypes.DATA_TYPE_UINT8:
                 case (int)E_StructTypes.DATA_TYPE_UINT8_1:
-                    this.uint8 = er.ReadByte();
+                    uint8 = er.ReadByte();
                     break;
                 case (int)E_StructTypes.DATA_TYPE_UINT16:
                 case (int)E_StructTypes.DATA_TYPE_UINT16_1:
-                    this.uint16 = er.ReadUInt16();
+                    uint16 = er.ReadUInt16();
                     break;
 
                 case (int)E_StructTypes.DATA_TYPE_UINT32:
                 case (int)E_StructTypes.DATA_TYPE_UINT32_1:
-                    this.uint32 = er.ReadUInt32();
+                    uint32 = er.ReadUInt32();
                     break;
 
                 case (int)E_StructTypes.DATA_TYPE_UINT64:
                 case (int)E_StructTypes.DATA_TYPE_UINT64_1:
-                    this.uint64 = er.ReadUInt64();
+                    uint64 = er.ReadUInt64();
 
                     break;
 
                 case (int)E_StructTypes.DATA_TYPE_FLOAT:
-                    this.ufloat = er.ReadSingle();
+                    ufloat = er.ReadSingle();
                     break;
 
                 case 0xA:
-                    this.str = Tools.ReadCString(er, -1, er.ReadInt32() + strings_offset, encoding);
+                    str = Tools.ReadCString(er, -1, er.ReadInt32() + strings_offset, encoding);
 
                     break;
 
                 case (int)E_StructTypes.DATA_TYPE_BYTEARRAY:
                     long position = er.ReadInt32() + data_offset;
                     this.position = position;
-                    this.data = Tools.GetData(er, position, er.ReadInt32());
+                    data = Tools.GetData(er, position, er.ReadInt32());
                     break;
             }
         }

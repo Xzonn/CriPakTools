@@ -5,9 +5,10 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyTitle>LibCPK</AssemblyTitle>
     <Product>LibCPK</Product>
-    <Copyright>Copyright ©  2016</Copyright>
+    <Copyright>Copyright © wmltogether 2016-2019 © Xzonn 2023-2024</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <LangVersion>12.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

@@ -71,7 +71,7 @@
                 *(dest + m--) = 0;
             }
             *destLen = *destLen - m; dest += m;
-            int[] l = { 0x4c495243, 0x414c5941, srcLen - 0x100, *destLen };
+            int[] l = [0x4c495243, 0x414c5941, srcLen - 0x100, *destLen];
             for (j = 0; j < 4; j++)
             {
                 for (i = 0; i < 4; i++)

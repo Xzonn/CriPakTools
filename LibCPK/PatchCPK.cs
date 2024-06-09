@@ -17,27 +17,27 @@ namespace LibCPK
         private Action onCompleteChanged;
         public PatchCPK(CPK pCpk, string oldContentName)
         {
-            this.cpk = pCpk;
+            cpk = pCpk;
             //MainApp.Instance.currentPackage.CpkContentName;
-            this.cpkContentName = oldContentName;
+            cpkContentName = oldContentName;
         }
 
         public void SetListener(Action<float> onProgressChangedEvent, Action<string> onMsgUpdateEvent, Action onCompleteEvent)
         {
-            this.onProgressChanged = onProgressChangedEvent;
-            this.onMsgUpdateChanged = onMsgUpdateEvent;
-            this.onCompleteChanged = onCompleteEvent;
+            onProgressChanged = onProgressChangedEvent;
+            onMsgUpdateChanged = onMsgUpdateEvent;
+            onCompleteChanged = onCompleteEvent;
         }
 
         public void Patch(string outputFilePath, bool bForceCompress, Dictionary<string, string> batch_file_list)
         {
             string msg;
-            BinaryReader br = new BinaryReader(File.OpenRead(this.cpkContentName));
+            BinaryReader br = new(File.OpenRead(cpkContentName));
             string outputName = outputFilePath;
 
-            BinaryWriter bw = new BinaryWriter(File.OpenWrite(outputName));
+            BinaryWriter bw = new(File.OpenWrite(outputName));
 
-            List<FileEntry> entries = cpk.fileTable.OrderBy(x => x.FileOffset).ToList();
+            List<FileEntry> entries = [.. cpk.fileTable.OrderBy(x => x.FileOffset)];
 
             int id;
             bool bFileRepeated = Tools.CheckListRedundant(entries);
@@ -91,7 +91,7 @@ namespace LibCPK
                             onMsgUpdateChanged?.Invoke(string.Format("Update Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                             cpk.UpdateFileEntry(entries[i]);
 
-                            byte[] chunk = br.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
+                            byte[] chunk = br.ReadBytes(int.Parse(entries[i].FileSize.ToString()));
                             bw.Write(chunk);
 
                             bw.BaseStream.Position += (0x800 - bw.BaseStream.Position % 0x800) % 0x800;
@@ -106,8 +106,8 @@ namespace LibCPK
 
                             byte[] newbie = File.ReadAllBytes(replace_with);
                             entries[i].FileOffset = (ulong)bw.BaseStream.Position;
-                            int o_ext_size = Int32.Parse((entries[i].ExtractSize).ToString());
-                            int o_com_size = Int32.Parse((entries[i].FileSize).ToString());
+                            int o_ext_size = int.Parse((entries[i].ExtractSize).ToString());
+                            int o_com_size = int.Parse((entries[i].FileSize).ToString());
                             if ((o_com_size < o_ext_size) && entries[i].FileType == "FILE" && bForceCompress == true)
                             {
                                 // is compressed
@@ -172,7 +172,7 @@ namespace LibCPK
                         onMsgUpdateChanged?.Invoke(string.Format("Update HDR Entry: {0}, {1:x8}", entries[i].FileName, entries[i].FileOffset));
                         cpk.UpdateFileEntry(entries[i]);
 
-                        byte[] chunk = br.ReadBytes(Int32.Parse(entries[i].FileSize.ToString()));
+                        byte[] chunk = br.ReadBytes(int.Parse(entries[i].FileSize.ToString()));
                         bw.Write(chunk);
 
                         bw.BaseStream.Position += (0x800 - bw.BaseStream.Position % 0x800) % 0x800;

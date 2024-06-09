@@ -100,7 +100,7 @@ namespace LibCPK
         private void FillMyBuffer(int numBytes)
         {
             int offset = 0;
-            int num2 = 0;
+            int num2;
             if (numBytes == 1)
             {
                 num2 = BaseStream.ReadByte();
@@ -159,25 +159,25 @@ namespace LibCPK
 
         public void Write(FileEntry entry)
         {
-            if (entry.ExtractSizeType == typeof(Byte))
+            if (entry.ExtractSizeType == typeof(byte))
             {
-                Write((Byte)entry.ExtractSize);
+                Write((byte)entry.ExtractSize);
             }
-            else if (entry.ExtractSizeType == typeof(UInt16))
+            else if (entry.ExtractSizeType == typeof(ushort))
             {
-                Write((UInt16)entry.ExtractSize);
+                Write((ushort)entry.ExtractSize);
             }
-            else if (entry.ExtractSizeType == typeof(UInt32))
+            else if (entry.ExtractSizeType == typeof(uint))
             {
-                Write((UInt32)entry.ExtractSize);
+                Write((uint)entry.ExtractSize);
             }
-            else if (entry.ExtractSizeType == typeof(UInt64))
+            else if (entry.ExtractSizeType == typeof(ulong))
             {
-                Write((UInt64)entry.ExtractSize);
+                Write((ulong)entry.ExtractSize);
             }
-            else if (entry.ExtractSizeType == typeof(Single))
+            else if (entry.ExtractSizeType == typeof(float))
             {
-                Write((Single)entry.ExtractSize);
+                Write((float)entry.ExtractSize);
             }
             else
             {

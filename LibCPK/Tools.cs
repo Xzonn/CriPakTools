@@ -13,7 +13,7 @@ namespace LibCPK
         {
 
             bool result = false;
-            List<string> tmp = new List<string>();
+            List<string> tmp = [];
             for (int i = 0; i < input.Count; i++)
             {
                 string name = ((input[i].DirName != null) ?
@@ -39,10 +39,10 @@ namespace LibCPK
             // /HD_font_a.ftx,patch/BOOT.cpk_unpacked/HD_font_a.ftx
             // OTHER/ICON0.PNG,patch/BOOT.cpk_unpacked/OTHER/ICON0.PNG
 
-            Dictionary<string, string> flist = new Dictionary<string, string>();
+            Dictionary<string, string> flist = [];
 
-            StreamReader sr = new StreamReader(batch_script_name, Encoding.Default);
-            String line;
+            StreamReader sr = new(batch_script_name, Encoding.Default);
+            string line;
             while ((line = sr.ReadLine()) != null)
             {
                 if (line.IndexOf(",") > -1)
@@ -70,10 +70,7 @@ namespace LibCPK
                 Max = MaxLength;
 
             long fTemp = br.BaseStream.Position;
-            byte bTemp = 0;
             int i = 0;
-            string result = "";
-
             if (lOffset > -1)
             {
                 br.BaseStream.Seek(lOffset, SeekOrigin.Begin);
@@ -81,7 +78,7 @@ namespace LibCPK
 
             do
             {
-                bTemp = br.ReadByte();
+                byte bTemp = br.ReadByte();
                 if (bTemp == 0)
                     break;
                 i += 1;
@@ -92,6 +89,7 @@ namespace LibCPK
             else
                 Max = MaxLength;
 
+            string result;
             if (lOffset > -1)
             {
                 br.BaseStream.Seek(lOffset, SeekOrigin.Begin);
@@ -130,10 +128,9 @@ namespace LibCPK
 
         public static byte[] GetData(BinaryReader br, long offset, int size)
         {
-            byte[] result = null;
             long backup = br.BaseStream.Position;
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            result = br.ReadBytes(size);
+            byte[] result = br.ReadBytes(size);
             br.BaseStream.Seek(backup, SeekOrigin.Begin);
             return result;
         }
