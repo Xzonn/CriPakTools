@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
-using LibCRIComp;
 using System.Diagnostics;
 
 namespace LibCPK
@@ -624,7 +623,7 @@ namespace LibCPK
                     //Move cricompress to CLR
                     int destLength = (int)input.Length;
 
-                    int result = LibCRIComp.CriCompression.CRIcompress(dst, &destLength, src, input.Length);
+                    int result = CriCompression.CRIcompress(dst, &destLength, src, input.Length);
                     byte[] arr = new byte[destLength];
                     Marshal.Copy((IntPtr)dst, arr, 0, destLength);
                     return arr;
